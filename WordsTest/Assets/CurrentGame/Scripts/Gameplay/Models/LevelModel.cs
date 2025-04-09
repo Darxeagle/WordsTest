@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace WordsTest.Gameplay.Models
+namespace CurrentGame.Gameplay.Models
 {
     [Serializable]
     public class LevelModel

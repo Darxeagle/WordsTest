@@ -1,10 +1,10 @@
-using UnityEngine;
 using System.Collections.Generic;
+using CurrentGame.Gameplay.Models;
 using DG.Tweening;
+using UnityEngine;
 using UnityEngine.EventSystems;
-using WordsTest.Gameplay.Models;
 
-namespace WordsTest.Gameplay
+namespace CurrentGame.Gameplay.Views
 {
     public class PaletteView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {

@@ -1,17 +1,18 @@
+using CurrentGame.Gameplay.Models;
+using CurrentGame.Gameplay.Views;
 using UnityEngine;
-using WordsTest.Gameplay.Models;
-using System;
+using Zenject;
 
-namespace WordsTest.Gameplay 
+namespace CurrentGame.Gameplay.Controllers 
 {
-    public class LevelInputController : MonoBehaviour
+    public class LevelInputController : IInitializable
     {
-        [SerializeField] private LevelView levelView;
-        [SerializeField] private LevelController levelController;
+        [Inject] private LevelView levelView;
+        [Inject] private LevelController levelController;
 
         private Cluster draggedCluster;
 
-        private void Awake()
+        public void Initialize()
         {
             levelView.OnClusterDragBegin += HandleClusterDragBegin;
             levelView.OnClusterDragProgress += HandleClusterDragProgress;
@@ -62,16 +63,6 @@ namespace WordsTest.Gameplay
                         levelController.ReturnClusterToPalette(cluster);
                     }
                 }
-            }
-        }
-
-        private void OnDestroy()
-        {
-            if (levelView != null)
-            {
-                levelView.OnClusterDragBegin -= HandleClusterDragBegin;
-                levelView.OnClusterDragProgress -= HandleClusterDragProgress;
-                levelView.OnClusterDragEnd -= HandleClusterDragEnd;
             }
         }
     }

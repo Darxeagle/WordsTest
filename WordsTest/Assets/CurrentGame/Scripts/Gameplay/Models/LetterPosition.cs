@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WordsTest.Gameplay.Models
+namespace CurrentGame.Gameplay.Models
 {
     [Serializable]
     public class LetterPosition

@@ -1,10 +1,10 @@
+using System;
+using CurrentGame.Gameplay.Models;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using DG.Tweening;
-using WordsTest.Gameplay.Models;
-using System;
 
-namespace WordsTest.Gameplay
+namespace CurrentGame.Gameplay.Views
 {
     public class ClusterView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
     {

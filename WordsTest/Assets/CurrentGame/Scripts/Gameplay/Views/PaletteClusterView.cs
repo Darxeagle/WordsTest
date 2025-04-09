@@ -1,7 +1,6 @@
 using UnityEngine;
-using DG.Tweening;
 
-namespace WordsTest.Gameplay
+namespace CurrentGame.Gameplay.Views
 {
     public class PaletteClusterView : MonoBehaviour
     {

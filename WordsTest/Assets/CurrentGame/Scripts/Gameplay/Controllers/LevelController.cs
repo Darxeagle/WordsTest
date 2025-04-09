@@ -1,41 +1,46 @@
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using DG.Tweening;
-using WordsTest.Gameplay.Models;
+using CurrentGame.GameFlow;
+using CurrentGame.Gameplay.Models;
+using CurrentGame.Gameplay.Views;
+using UnityEngine;
+using Zenject;
 
-namespace WordsTest.Gameplay
+namespace CurrentGame.Gameplay.Controllers
 {
-    public class LevelController : MonoBehaviour
+    public class LevelController : IInitializable
     {
-        [SerializeField] private LevelView levelView;
-        [SerializeField] private PaletteView paletteView;
-        
-        private LevelLoader levelLoader;
+        [Inject] private LevelView levelView;
+        [Inject] private PaletteView paletteView;
+        [Inject] private LevelLoader levelLoader;
+        [Inject] private RemoteConfigManager remoteConfigManager;
+
         private LevelModel levelModel;
+        private int currentLevelIndex = 0;
 
-        private void Awake()
+        public async void Initialize()
         {
-            levelLoader = new LevelLoader();
-        }
-        
-        private void Start()
-        {
-            var levelData = new LevelData();
-            levelData.words = new List<string> { "banana", "cherry", "orange", "papaya", "grapes", "tomato" };
-            levelData.clusters = new List<string> { "ban", "ana", "cher", "ry", "or", "ange", "pap", "aya", "gr", "apes", "toma", "to" };
-            levelModel = levelLoader.CreateModel(levelData);
-            InitializeGame();
+            // Start with level 1
+            LoadLevelByIndex(0);
+            
+            // Initialize remote config for future levels
+            await remoteConfigManager.Initialize();
         }
 
-        public void LoadLevel(string levelId)
+        public void LoadLevelByIndex(int index)
         {
-            var levelData = levelLoader.LoadLevel(levelId);
+            var levelData = levelLoader.LoadLevelByIndex(index);
             if (levelData != null)
             {
+                currentLevelIndex = index;
                 levelModel = levelLoader.CreateModel(levelData);
                 InitializeGame();
             }
+        }
+
+        public void LoadNextLevel()
+        {
+            LoadLevelByIndex(currentLevelIndex + 1);
         }
 
         private void InitializeGame()
@@ -118,6 +123,51 @@ namespace WordsTest.Gameplay
             return levelModel.placedClusters.Any(pc => pc.cluster == cluster);
         }
 
-
+        public void CheckCompleted()
+        {
+            var placedClustersGroups = levelModel.placedClusters.GroupBy(pc => pc.position.wordIndex).ToList();
+            var requiredWords = levelModel.words.ToList();
+            
+            foreach (var placedClusterGroup in placedClustersGroups)
+            {
+                foreach (var word in requiredWords)
+                {
+                    var remainingChars = word.characters.ToList();
+                    
+                    foreach (var placedCluster in placedClusterGroup)
+                    {
+                        for (int i = 0; i < placedCluster.cluster.length; i++)
+                        {
+                            var charIndex = placedCluster.position.charIndex + i;
+                            if (word.characters[charIndex] == placedCluster.cluster.characters[i])
+                            {
+                                remainingChars.Remove(word.characters[charIndex]);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (remainingChars.Count == 0)
+                    {
+                        requiredWords.Remove(word);
+                        break;
+                    }
+                }
+            }
+            
+            if (requiredWords.Count == 0)
+            {
+                // All words are formed
+                Debug.Log("Level Completed!");
+            }
+            else
+            {
+                // Not all words are formed
+                Debug.Log("Level Not Completed Yet!");
+            }
+        }
     }
 }

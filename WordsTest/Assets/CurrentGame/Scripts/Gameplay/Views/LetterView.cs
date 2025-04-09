@@ -1,8 +1,8 @@
-using UnityEngine;
 using DG.Tweening;
 using TMPro;
+using UnityEngine;
 
-namespace WordsTest.Gameplay
+namespace CurrentGame.Gameplay.Views
 {
     public class LetterView : MonoBehaviour
     {

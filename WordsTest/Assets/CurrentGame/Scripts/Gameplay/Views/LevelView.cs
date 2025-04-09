@@ -1,11 +1,11 @@
-using UnityEngine;
-using System.Collections.Generic;
-using WordsTest.Gameplay.Models;
 using System;
+using System.Collections.Generic;
+using CurrentGame.Gameplay.Models;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using UnityEngine;
 
-namespace WordsTest.Gameplay
+namespace CurrentGame.Gameplay.Views
 {
     public class LevelView : MonoBehaviour
     {

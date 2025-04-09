@@ -1,25 +1,22 @@
-using UnityEngine;
-using System.IO;
+using CurrentGame.GameFlow;
+using CurrentGame.Gameplay.Models;
 using System.Linq;
-using WordsTest.Gameplay.Models;
+using UnityEngine;
 
-namespace WordsTest.Gameplay
+namespace CurrentGame.Gameplay.Controllers
 {
     public class LevelLoader
     {
-        public LevelData LoadLevel(string levelId)
+        private readonly LevelsDataManager levelsDataManager;
+
+        public LevelLoader(LevelsDataManager levelsDataManager)
         {
-            string jsonPath = Path.Combine(Application.streamingAssetsPath, $"Levels/{levelId}.json");
-            if (File.Exists(jsonPath))
-            {
-                string jsonContent = File.ReadAllText(jsonPath);
-                return JsonUtility.FromJson<LevelData>(jsonContent);
-            }
-            else
-            {
-                Debug.LogError($"Level file not found: {jsonPath}");
-                return null;
-            }
+            this.levelsDataManager = levelsDataManager;
+        }
+
+        public LevelData LoadLevelByIndex(int index)
+        {
+            return levelsDataManager.GetLevelByIndex(index);
         }
         
         public LevelModel CreateModel(LevelData levelData)
