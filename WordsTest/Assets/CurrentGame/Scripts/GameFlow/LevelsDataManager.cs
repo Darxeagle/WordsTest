@@ -9,22 +9,26 @@ namespace CurrentGame.GameFlow
     {
         [Inject] private RemoteConfigManager remoteConfigManager;
 
-        private Dictionary<int, LevelData> levelsData = new();
-            if (jsonAsset != null)
-            {
-                var levelData = JsonUtility.FromJson<LevelData>(jsonAsset.text);
-                levelsData.Add(levelData.id, levelData);
-            }
+        private List<LevelData> levelsData = new();
         
         public void Initialize()
         {
             LoadFirstLevel();
+            HandleRemoteDataLoaded();
             remoteConfigManager.OnRemoteDataLoaded += HandleRemoteDataLoaded;
         }
 
         private void LoadFirstLevel()
         {
             var jsonAsset = Resources.Load<TextAsset>("level0");
+            if (jsonAsset != null)
+            {
+                var levelData = JsonUtility.FromJson<LevelData>(jsonAsset.text);
+                if (levelsData.Count == 0)
+                {
+                    levelsData.Add(levelData);
+                }
+            }
             else
             {
                 Debug.LogError("Failed to load level0.json from Resources");
@@ -33,16 +37,14 @@ namespace CurrentGame.GameFlow
 
         private void HandleRemoteDataLoaded()
         {
-            if (string.IsNullOrEmpty(remoteConfigManager.LevelsJson))
-                return;
-
-            var levelDatas = JsonUtility.FromJson<List<LevelData>>(remoteConfigManager.LevelsJson);
-            foreach (var level in levelDatas)
+            if (remoteConfigManager.LevelsConfig == null)
             {
-                if (!levelsData.ContainsKey(level.id))
-                {
-                    levelsData.Add(level.id, level);
-                }
+                return;
+            }
+
+            if (remoteConfigManager.LevelsConfig?.levels.Count > 0)
+            {
+                levelsData = remoteConfigManager.LevelsConfig.levels;
             }
         }
 

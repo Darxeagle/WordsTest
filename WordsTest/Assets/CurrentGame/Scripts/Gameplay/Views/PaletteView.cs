@@ -50,10 +50,10 @@ namespace CurrentGame.Gameplay.Views
         public void Initialize(LevelModel model)
         {
             levelModel = model;
-            CreateClusters(model.paletteClusters);
+            CreateClusters(model.PaletteClusters);
         }
         
-        private void CreateClusters(List<Cluster> clusters)
+        private void CreateClusters(IReadOnlyList<Cluster> clusters)
         {
             foreach (var cluster in clusters)
             {
@@ -177,9 +177,9 @@ namespace CurrentGame.Gameplay.Views
         private void UpdateClusterPositions()
         {
             float currentX = 0f;
-            for (int i = 0; i < levelModel.paletteClusters.Count; i++)
+            for (int i = 0; i < levelModel.PaletteClusters.Count; i++)
             {
-                var cluster = levelModel.paletteClusters[i];
+                var cluster = levelModel.PaletteClusters[i];
                 var clusterView = paletteClusters[cluster].GetClusterView();
                 if (clusterView == null) continue;
                 

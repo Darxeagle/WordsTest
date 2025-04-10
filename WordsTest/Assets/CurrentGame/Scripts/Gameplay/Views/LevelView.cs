@@ -35,12 +35,11 @@ namespace CurrentGame.Gameplay.Views
         {
             levelModel = model;
             Clear();
-            CreateCells(model.words);
-            CreatePlacedClusterViews(model.placedClusters);
-            paletteView.Initialize(model);
+            CreateCells(model.Words);
+            CreatePlacedClusterViews(model.PlacedClusters);
         }
 
-        private void CreateCells(List<Word> words)
+        private void CreateCells(IReadOnlyList<Word> words)
         {
             for (int i = 0; i < words.Count; i++)
             {
@@ -54,13 +53,13 @@ namespace CurrentGame.Gameplay.Views
             }
         }
         
-        private void CreatePlacedClusterViews(List<PlacedCluster> clusters)
+        private void CreatePlacedClusterViews(IReadOnlyList<PlacedCluster> clusters)
         {
             foreach (var placedCluster in clusters)
             {
                 var clusterView = CreateClusterView(placedCluster.cluster);
                 clusterView.transform.SetParent(cellsContainer, false);
-                clusterView.transform.localPosition = GetLetterPosition(placedCluster.position);
+                clusterView.transform.position = GetLetterPosition(placedCluster.position);
                 placedClusters.Add(placedCluster, clusterView);
             }
         }
@@ -93,9 +92,9 @@ namespace CurrentGame.Gameplay.Views
         public Vector3 GetLetterPosition(LetterPosition letterPosition)
         {
             return cellsContainer.position + new Vector3(
-                -(levelModel.words[letterPosition.wordIndex].length - 1) * LETTER_SPACING / 2f +
+                -(levelModel.Words[letterPosition.wordIndex].length - 1) * LETTER_SPACING / 2f +
                 LETTER_SPACING * letterPosition.charIndex,
-                (levelModel.words.Count - 1) * WORD_SPACING / 2f - WORD_SPACING * letterPosition.wordIndex,
+                (levelModel.Words.Count - 1) * WORD_SPACING / 2f - WORD_SPACING * letterPosition.wordIndex,
                 0f);
         }
 
@@ -104,9 +103,9 @@ namespace CurrentGame.Gameplay.Views
             float minDistance = 2f*2f;
             LetterPosition nearestLetter = null;
 
-            for (int i = 0; i < levelModel.words.Count; i++)
+            for (int i = 0; i < levelModel.Words.Count; i++)
             {
-                var word = levelModel.words[i];
+                var word = levelModel.Words[i];
                 for (int j = 0; j < word.length; j++)
                 {
                     var letterPosition = GetLetterPosition(new LetterPosition(i, j));

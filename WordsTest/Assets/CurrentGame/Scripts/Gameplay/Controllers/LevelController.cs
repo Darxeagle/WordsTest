@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using CurrentGame.GameFlow;
 using CurrentGame.Gameplay.Models;
 using CurrentGame.Gameplay.Views;
@@ -8,60 +9,29 @@ using Zenject;
 
 namespace CurrentGame.Gameplay.Controllers
 {
-    public class LevelController : IInitializable
+    public class LevelController
     {
         [Inject] private LevelView levelView;
         [Inject] private PaletteView paletteView;
-        [Inject] private LevelLoader levelLoader;
         [Inject] private RemoteConfigManager remoteConfigManager;
+        [Inject] private GameController gameController;
+        [Inject] private LevelModel levelModel;
 
-        private LevelModel levelModel;
-        private int currentLevelIndex = 0;
-
-        public async void Initialize()
-        {
-            // Start with level 1
-            LoadLevelByIndex(0);
-            
-            // Initialize remote config for future levels
-            await remoteConfigManager.Initialize();
-        }
-
-        public void LoadLevelByIndex(int index)
-        {
-            var levelData = levelLoader.LoadLevelByIndex(index);
-            if (levelData != null)
-            {
-                currentLevelIndex = index;
-                levelModel = levelLoader.CreateModel(levelData);
-                InitializeGame();
-            }
-        }
-
-        public void LoadNextLevel()
-        {
-            LoadLevelByIndex(currentLevelIndex + 1);
-        }
-
-        private void InitializeGame()
+        public void InitializeLevel()
         {
             levelView.Initialize(levelModel);
-        }
-
-        public List<Word> GetWords()
-        {
-            return levelModel.words;
+            paletteView.Initialize(levelModel);
         }
 
         public bool CheckPlacement(Cluster cluster, LetterPosition letterPosition)
         {
-            var word = levelModel.words[letterPosition.wordIndex];
+            var word = levelModel.Words[letterPosition.wordIndex];
             
             if (cluster == null || letterPosition.wordIndex < 0 || letterPosition.charIndex + cluster.length > word.length)
                 return false;
 
             // Check if position is already occupied
-            return !levelModel.placedClusters.Any(pc => pc.cluster != cluster &&
+            return !levelModel.PlacedClusters.Any(pc => pc.cluster != cluster &&
                 pc.position.wordIndex == letterPosition.wordIndex && 
                 (pc.position.charIndex + pc.cluster.length > letterPosition.charIndex && 
                  pc.position.charIndex < letterPosition.charIndex + cluster.length));
@@ -69,22 +39,22 @@ namespace CurrentGame.Gameplay.Controllers
 
         public void PlaceCluster(ClusterView clusterView, LetterPosition letterPosition)
         {
-            var existingPlacedCluster = levelModel.placedClusters
+            var existingPlacedCluster = levelModel.PlacedClusters
                 .FirstOrDefault(pc => pc.cluster == clusterView.Model);
 
             if (existingPlacedCluster != null)
             {
-                levelModel.placedClusters.Remove(existingPlacedCluster);
+                levelModel.RemovePlacedCluster(existingPlacedCluster);
             }
             
-            levelModel.paletteClusters.Remove(clusterView.Model);
+            levelModel.RemovePaletteCluster(clusterView.Model);
             
             var placedCluster = new PlacedCluster
             {
                 cluster = clusterView.Model,
                 position = letterPosition,
             };
-            levelModel.placedClusters.Add(placedCluster);
+            levelModel.AddPlacedCluster(placedCluster);
             
             levelView.PlaceCluster(clusterView, placedCluster);
             paletteView.RemoveCluster(clusterView.Model);
@@ -92,17 +62,17 @@ namespace CurrentGame.Gameplay.Controllers
 
         public void ReturnClusterToPalette(Cluster cluster)
         {
-            if (levelModel.paletteClusters.Contains(cluster))
+            if (levelModel.PaletteClusters.Contains(cluster))
             {
                 paletteView.MoveClusterToPanel(cluster);
             }
             else
             {
-                var placedCluster = levelModel.placedClusters.First(fc => fc.cluster == cluster);
+                var placedCluster = levelModel.PlacedClusters.First(fc => fc.cluster == cluster);
                 var clusterView = levelView.PlacedClusters[placedCluster];
 
-                levelModel.placedClusters.Remove(placedCluster);
-                levelModel.paletteClusters.Add(cluster);
+                levelModel.RemovePlacedCluster(placedCluster);
+                levelModel.AddPaletteCluster(cluster);
                 
                 paletteView.AddCluster(cluster, clusterView);
             }
@@ -110,7 +80,7 @@ namespace CurrentGame.Gameplay.Controllers
         
         public void ReturnClusterToPlace(ClusterView cluster)
         {
-            var placedCluster = levelModel.placedClusters.FirstOrDefault(fc => fc.cluster == cluster.Model);
+            var placedCluster = levelModel.PlacedClusters.FirstOrDefault(fc => fc.cluster == cluster.Model);
             if (placedCluster != null)
             {
                 Vector3 targetPos = levelView.GetLetterPosition(placedCluster.position);
@@ -120,54 +90,12 @@ namespace CurrentGame.Gameplay.Controllers
 
         public bool IsPlacedCLuster(Cluster cluster)
         {
-            return levelModel.placedClusters.Any(pc => pc.cluster == cluster);
+            return levelModel.PlacedClusters.Any(pc => pc.cluster == cluster);
         }
 
         public void CheckCompleted()
         {
-            var placedClustersGroups = levelModel.placedClusters.GroupBy(pc => pc.position.wordIndex).ToList();
-            var requiredWords = levelModel.words.ToList();
-            
-            foreach (var placedClusterGroup in placedClustersGroups)
-            {
-                foreach (var word in requiredWords)
-                {
-                    var remainingChars = word.characters.ToList();
-                    
-                    foreach (var placedCluster in placedClusterGroup)
-                    {
-                        for (int i = 0; i < placedCluster.cluster.length; i++)
-                        {
-                            var charIndex = placedCluster.position.charIndex + i;
-                            if (word.characters[charIndex] == placedCluster.cluster.characters[i])
-                            {
-                                remainingChars.Remove(word.characters[charIndex]);
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (remainingChars.Count == 0)
-                    {
-                        requiredWords.Remove(word);
-                        break;
-                    }
-                }
-            }
-            
-            if (requiredWords.Count == 0)
-            {
-                // All words are formed
-                Debug.Log("Level Completed!");
-            }
-            else
-            {
-                // Not all words are formed
-                Debug.Log("Level Not Completed Yet!");
-            }
+            gameController.CheckFinish();
         }
     }
 }

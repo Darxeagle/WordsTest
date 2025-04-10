@@ -1,20 +1,28 @@
 using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using CurrentGame.Gameplay.Models;
+using Cysharp.Threading.Tasks;
 using Unity.Services.Core;
 using Unity.Services.RemoteConfig;
 using UnityEngine;
+using Zenject;
 
 namespace CurrentGame.GameFlow
 {
-    public class RemoteConfigManager
+    public class RemoteConfigManager : IInitializable
     {
         private struct UserAttributes { }
         private struct AppAttributes { }
 
         public event Action OnRemoteDataLoaded;
-        public string LevelsJson { get; private set; }
+        public LevelsConfig LevelsConfig { get; private set; }
         
-        public async Task Initialize()
+        public void Initialize()
+        {
+            InitializeAsync().Forget();
+        }
+        
+        private async UniTask InitializeAsync()
         {
             try
             {
@@ -36,9 +44,14 @@ namespace CurrentGame.GameFlow
         {
             if (configResponse.requestOrigin == ConfigOrigin.Remote)
             {
-                LevelsJson = RemoteConfigService.Instance.appConfig.GetJson("levels");
+                LevelsConfig = JsonUtility.FromJson<LevelsConfig>(RemoteConfigService.Instance.appConfig.GetJson("levels"));
                 OnRemoteDataLoaded?.Invoke();
             }
         }
+    }
+    
+    public class LevelsConfig
+    {
+        public List<LevelData> levels;
     }
 }

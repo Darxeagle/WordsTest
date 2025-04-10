@@ -312,7 +312,7 @@ TextureImporter:
         width: 137
         height: 140
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -333,7 +333,7 @@ TextureImporter:
         width: 311
         height: 126
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -341,6 +341,27 @@ TextureImporter:
       bones: []
       spriteID: 365c0d51845117d4cb224267c3167f2c
       internalID: -697895153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: words_test_assets_10
+      rect:
+        serializedVersion: 2
+        x: 735
+        y: 483
+        width: 137
+        height: 140
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 01c04b4b2857dc94681b07da9750ad35
+      internalID: -774969659
       vertices: []
       indices: 
       edges: []
@@ -358,6 +379,7 @@ TextureImporter:
     nameFileIdTable:
       words_test_assets_0: -1891518624
       words_test_assets_1: 1512553354
+      words_test_assets_10: -774969659
       words_test_assets_2: -1818428275
       words_test_assets_3: 1239831107
       words_test_assets_4: 2031563276

@@ -1,4 +1,5 @@
-﻿using CurrentGame.Gameplay.Controllers;
+﻿using CurrentGame.GameFlow;
+using CurrentGame.Gameplay.Controllers;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -11,6 +12,7 @@ namespace CurrentGame.Gameplay.Views
         [SerializeField] private Button optionsButton;
         
         [Inject] private LevelController levelController;
+        [Inject] private GameController gameController;
         
         private void Awake()
         {
@@ -25,8 +27,7 @@ namespace CurrentGame.Gameplay.Views
         
         private void OnOptionsButtonClicked()
         {
-            // Handle options button click
-            Debug.Log("Options button clicked");
+            gameController.ToOptions(false);
         }
     }
 }

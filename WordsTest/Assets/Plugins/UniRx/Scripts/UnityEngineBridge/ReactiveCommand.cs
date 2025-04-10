@@ -229,7 +229,7 @@ namespace UniRx
                     try
                     {
                         var asyncState = a[0].Invoke(parameter) ?? Observable.ReturnUnit();
-                        return asyncState.Finally(() => canExecuteSource.Value = true).Subscribe();
+                        return asyncState.Finally(() => canExecuteSource.Value = true).Subscribe(_ => { });
                     }
                     catch
                     {
@@ -253,7 +253,7 @@ namespace UniRx
                         throw;
                     }
 
-                    return Observable.WhenAll(xs).Finally(() => canExecuteSource.Value = true).Subscribe();
+                    return Observable.WhenAll(xs).Finally(() => canExecuteSource.Value = true).Subscribe(_ => { });
                 }
             }
             else
