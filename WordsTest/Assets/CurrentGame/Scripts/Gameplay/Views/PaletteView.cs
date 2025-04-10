@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using CurrentGame.Gameplay.Models;
+using CurrentGame.Helpers;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -15,41 +17,21 @@ namespace CurrentGame.Gameplay.Views
         [SerializeField] private Transform scrollContainer;
         [SerializeField] private SpriteRenderer backgroundRenderer;
         [SerializeField] private Transform clustersContainer;
-        [SerializeField] private float height = 4f;
-        [SerializeField] private float clusterSpacing = 2f;
-        [SerializeField] private float scrollSpeed = 1f;
-        [SerializeField] private float insertionOffset = 1f; // How far clusters move aside on insertion
-        [SerializeField] private float insertionInertiaMultiplier = 1.5f; // Makes target position a bit further for inertia
         [SerializeField] private PaletteClusterView paletteClusterPrefab;
 
         private Dictionary<Cluster, PaletteClusterView> paletteClusters = new();
         private Vector2 lastDragPosition;
-        private float scrollOffset = 0f;
         private bool isDragging = false;
-        private Camera mainCamera;
         private LevelModel levelModel;
+        private float xMax;
+        private Rect screenBounds;
 
         public IReadOnlyDictionary<Cluster, PaletteClusterView> PaletteClusters => paletteClusters;
-        
-
-        private void Awake()
-        {
-            mainCamera = Camera.main;
-            if (scrollContainer == null)
-            {
-                scrollContainer = transform.Find("ScrollContainer");
-                if (scrollContainer == null)
-                {
-                    GameObject container = new GameObject("ScrollContainer");
-                    scrollContainer = container.transform;
-                    scrollContainer.SetParent(transform, false);
-                }
-            }
-        }
         
         public void Initialize(LevelModel model)
         {
             levelModel = model;
+            screenBounds = PositionHelper.GetScreenBounds();
             CreateClusters(model.PaletteClusters);
         }
         
@@ -60,6 +42,7 @@ namespace CurrentGame.Gameplay.Views
                 var clusterView = levelView.CreateClusterView(cluster);
                 var paletteClusterView = Instantiate(paletteClusterPrefab, clustersContainer);
                 paletteClusterView.SetClusterView(clusterView);
+                clusterView.transform.localPosition = Vector3.zero;
                 paletteClusters.Add(cluster, paletteClusterView);
             }
 
@@ -69,34 +52,28 @@ namespace CurrentGame.Gameplay.Views
         public void OnBeginDrag(PointerEventData eventData)
         {
             isDragging = true;
-            lastDragPosition = GetPointerWorldPosition(eventData);
+            lastDragPosition = PositionHelper.ScreenToWorld(eventData.position);
         }
 
         public void OnDrag(PointerEventData eventData)
         {
             if (!isDragging) return;
 
-            Vector2 currentPosition = GetPointerWorldPosition(eventData);
+            Vector2 currentPosition = PositionHelper.ScreenToWorld(eventData.position);
             float delta = currentPosition.x - lastDragPosition.x;
             
             if (Mathf.Abs(delta) > DRAG_THRESHOLD)
             {
-                scrollOffset += delta * scrollSpeed;
-                scrollContainer.localPosition = new Vector3(scrollOffset, 0f, 0f);
+                scrollContainer.localPosition += Vector3.right * delta;
                 lastDragPosition = currentPosition;
             }
+            
+            ClampScrollPosition();
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
             isDragging = false;
-        }
-
-        private Vector2 GetPointerWorldPosition(PointerEventData eventData)
-        {
-            Vector3 mousePos = eventData.position;
-            mousePos.z = -mainCamera.transform.position.z;
-            return mainCamera.ScreenToWorldPoint(mousePos);
         }
 
         /*
@@ -176,19 +153,45 @@ namespace CurrentGame.Gameplay.Views
 
         private void UpdateClusterPositions()
         {
-            float currentX = 0f;
-            for (int i = 0; i < levelModel.PaletteClusters.Count; i++)
+            float currentX = 0.5f;
+            
+            for (int i = 0; i < levelModel.PaletteClusters.Count; i++) 
             {
                 var cluster = levelModel.PaletteClusters[i];
                 var clusterView = paletteClusters[cluster].GetClusterView();
                 if (clusterView == null) continue;
                 
                 float clusterWidth = clusterView.GetWidth();
-                float targetX = currentX + clusterWidth / 2f; // Center of the cluster
-                paletteClusters[cluster].transform.localPosition = new Vector3(targetX, 0f, 0f);
-                
-                currentX += clusterWidth + clusterSpacing;
+                paletteClusters[cluster].transform.localPosition = new Vector3(currentX + LevelView.LETTER_SIZE/2f + LevelView.FRAME_PADDING, 0f, 0f);
+
+                currentX += clusterWidth + LevelView.FRAME_PADDING * 2f + LevelView.CLUSTER_SPACING;
             }
+
+            xMax = currentX - LevelView.CLUSTER_SPACING + 0.5f;
+
+            ClampScrollPosition();
+        }
+
+        private void ClampScrollPosition()
+        {
+            scrollContainer.localPosition = new Vector3(
+                Mathf.Clamp(scrollContainer.localPosition.x, -xMax+screenBounds.width/2f, -screenBounds.width/2f), 
+                0f, 0f);
+        }
+        
+        public void AddCluster(Cluster cluster, ClusterView clusterView)
+        {
+            if (paletteClusters.ContainsKey(cluster)) return;
+
+            Vector3 clusterPosition = clusterView.transform.position;
+            scrollContainer.localPosition += Vector3.left * (clusterView.GetWidth()/2f + LevelView.CLUSTER_SPACING);
+            
+            var paletteClusterView = Instantiate(paletteClusterPrefab, clustersContainer);
+            paletteClusterView.SetClusterView(clusterView);
+            paletteClusters.Add(cluster, paletteClusterView);
+            UpdateClusterPositions();
+            
+            MoveClusterToPanel(cluster, clusterPosition);
         }
 
         public void RemoveCluster(Cluster cluster)
@@ -198,21 +201,31 @@ namespace CurrentGame.Gameplay.Views
             {
                 Destroy(paletteClusterView.gameObject);
                 paletteClusters.Remove(cluster);
+                
+                scrollContainer.localPosition += Vector3.right * (paletteClusterView.GetClusterView().GetWidth()/2f + LevelView.CLUSTER_SPACING);
             }
             
             UpdateClusterPositions();
         }
-
-        public void AddCluster(Cluster cluster, ClusterView clusterView)
+        
+        public int GetInsertIndex(Vector3 position)
         {
-            if (paletteClusters.ContainsKey(cluster)) return;
-            
-            var paletteClusterView = Instantiate(paletteClusterPrefab, clustersContainer);
-            paletteClusterView.SetClusterView(clusterView);
-            paletteClusters.Add(cluster, paletteClusterView);
-            
-            UpdateClusterPositions();
-            MoveClusterToPanel(cluster);
+            int i = 0;
+            float lastX = -10f;
+
+            foreach (var paletteCluster in paletteClusters.Values)
+            {
+                var clusterPosition = paletteCluster.transform.localPosition + scrollContainer.localPosition;
+                if (position.x > lastX && position.x < clusterPosition.x)
+                {
+                    break;
+                }
+                
+                lastX = clusterPosition.x;
+                i++;
+            }
+
+            return i;
         }
 
         public void Clear()
@@ -223,12 +236,19 @@ namespace CurrentGame.Gameplay.Views
             }
             paletteClusters.Clear();
         }
-
-        public void MoveClusterToPanel(Cluster cluster)
+        
+        public void ReturnClusterToPanel(Cluster cluster)
         {
             if (!paletteClusters.ContainsKey(cluster)) return;
             var clusterView = paletteClusters[cluster].GetClusterView();
-            clusterView.transform.DOLocalMove(Vector3.zero, 0.2f).SetEase(DG.Tweening.Ease.OutBack);
+            clusterView.transform.DOLocalMove(Vector3.zero, 0.2f).SetEase(Ease.OutCirc);
+        }
+        
+        private void MoveClusterToPanel(Cluster cluster, Vector3 fromPosition)
+        {
+            if (!paletteClusters.ContainsKey(cluster)) return;
+            var clusterView = paletteClusters[cluster].GetClusterView();
+            clusterView.transform.DOMove(paletteClusters[cluster].transform.position, 0.2f).From(fromPosition).SetEase(Ease.OutCirc);
         }
     }
 }

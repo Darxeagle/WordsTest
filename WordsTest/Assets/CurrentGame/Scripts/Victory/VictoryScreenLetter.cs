@@ -1,12 +1,12 @@
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace CurrentGame.Victory
 {
     public class VictoryScreenLetter : MonoBehaviour
     {
-        [SerializeField] private Text letterText;
+        [SerializeField] private TMP_Text letterText;
         
         public void SetLetter(char letter, float delay)
         {

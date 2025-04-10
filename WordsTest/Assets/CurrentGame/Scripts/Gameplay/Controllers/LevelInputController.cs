@@ -38,7 +38,7 @@ namespace CurrentGame.Gameplay.Controllers
             
             if (levelView.IsPositionOnPalette(position))
             {
-                levelController.ReturnClusterToPalette(cluster);
+                levelController.ReturnClusterToPalette(cluster, position);
                 return;
             }
             else
@@ -46,7 +46,6 @@ namespace CurrentGame.Gameplay.Controllers
                 var letterPosition = levelView.GetNearestLetter(position);
 
                 bool isValidPlacement = letterPosition != null && levelController.CheckPlacement(cluster, letterPosition);
-                view.ResetHighlight();
 
                 if (isValidPlacement)
                 {
@@ -60,7 +59,7 @@ namespace CurrentGame.Gameplay.Controllers
                     }
                     else
                     {
-                        levelController.ReturnClusterToPalette(cluster);
+                        levelController.ReturnClusterToPalette(cluster, position);
                     }
                 }
             }

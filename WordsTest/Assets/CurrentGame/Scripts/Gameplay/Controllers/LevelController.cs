@@ -60,19 +60,21 @@ namespace CurrentGame.Gameplay.Controllers
             paletteView.RemoveCluster(clusterView.Model);
         }
 
-        public void ReturnClusterToPalette(Cluster cluster)
+        public void ReturnClusterToPalette(Cluster cluster, Vector3 position)
         {
             if (levelModel.PaletteClusters.Contains(cluster))
             {
-                paletteView.MoveClusterToPanel(cluster);
+                paletteView.ReturnClusterToPanel(cluster);
             }
             else
             {
                 var placedCluster = levelModel.PlacedClusters.First(fc => fc.cluster == cluster);
                 var clusterView = levelView.PlacedClusters[placedCluster];
+                
+                var insertIndex = paletteView.GetInsertIndex(position);
 
                 levelModel.RemovePlacedCluster(placedCluster);
-                levelModel.AddPaletteCluster(cluster);
+                levelModel.AddPaletteCluster(cluster, insertIndex);
                 
                 paletteView.AddCluster(cluster, clusterView);
             }

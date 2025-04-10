@@ -28,13 +28,13 @@ namespace CurrentGame.Victory
             nextLevelButton.onClick.AddListener(OnNextLevelButtonClicked);
         }
 
-        public void SetWords(List<string> words)
+        public void SetWords(List<Word> words)
         {
             Clear();
             Appear(words);
         }
 
-        private void Appear(List<string> words)
+        private void Appear(List<Word> words)
         {
             for (int i = 0; i < words.Count; i++)
             {

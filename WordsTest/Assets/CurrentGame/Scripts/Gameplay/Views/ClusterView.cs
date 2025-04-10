@@ -1,5 +1,6 @@
 using System;
 using CurrentGame.Gameplay.Models;
+using CurrentGame.Helpers;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,12 +9,11 @@ namespace CurrentGame.Gameplay.Views
 {
     public class ClusterView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
     {
+        [SerializeField] private Transform container;
         [SerializeField] private Transform lettersContainer;
         [SerializeField] private LetterView letterPrefab;
         [SerializeField] private SpriteRenderer frameRenderer;
         [SerializeField] private BoxCollider2D collider;
-        
-        private const float FRAME_PADDING = 0.2f;
         
         public event Action<ClusterView, Cluster, Vector3> OnDragBegin;
         public event Action<ClusterView, Cluster, Vector3> OnDragProgress;
@@ -24,14 +24,9 @@ namespace CurrentGame.Gameplay.Views
         private Vector3 startPosition;
         private bool isDragging;
         private LetterView[] letterViews;
-        private Camera mainCamera;
         
         public Cluster Model => model;
-
-        private void Awake()
-        {
-            mainCamera = Camera.main;
-        }
+        
 
         public void Initialize(Cluster clusterData)
         {
@@ -56,16 +51,17 @@ namespace CurrentGame.Gameplay.Views
                 letterViews[i] = letter;
                 if (letterViews[i] != null)
                 {
-                    letterViews[i].SetLetter(model.characters[i]);
+                    letterViews[i].SetLetter(model.characters[i], model.color);
                 }
             }
             
             var width = GetWidth();
-            frameRenderer.size = new Vector2(width + FRAME_PADDING*2f, frameRenderer.size.y);
-            frameRenderer.transform.localPosition = new Vector3(width / 2f - LevelView.LETTER_SIZE / 2f, 0f);
+            frameRenderer.size = new Vector2(width + LevelView.FRAME_PADDING*2f, LevelView.LETTER_SIZE + LevelView.FRAME_PADDING*2f);
+            frameRenderer.transform.localPosition = new Vector3(width / 2f - LevelView.LETTER_SIZE / 2f, 0f, frameRenderer.transform.localPosition.z);
             collider.size = frameRenderer.size;
             collider.offset = frameRenderer.transform.localPosition;
         }
+        
         public float GetWidth()
         {
             return (model.length-1) * LevelView.LETTER_DISTANCE + LevelView.LETTER_SIZE;
@@ -75,16 +71,17 @@ namespace CurrentGame.Gameplay.Views
         {
             isDragging = true;
             startPosition = transform.position;
-            Vector3 mousePosition = GetPointerWorldPosition(eventData);
+            Vector3 mousePosition = PositionHelper.ScreenToWorld(eventData.position);
             dragOffset = transform.position - mousePosition;
-            transform.DOScale(1.1f, 0.2f);
+            container.DOScale(1.1f, 0.2f);
+            container.localPosition = new Vector3(0f, 0f, -0.1f);
             OnDragBegin?.Invoke(this, model, transform.position);
         }
 
         public void OnDrag(PointerEventData eventData)
         {
             if (!isDragging) return;
-            transform.position = GetPointerWorldPosition(eventData) + dragOffset;
+            transform.position = PositionHelper.ScreenToWorld(eventData.position) + dragOffset;
             OnDragProgress?.Invoke(this, model, transform.position);
         }
 
@@ -92,49 +89,9 @@ namespace CurrentGame.Gameplay.Views
         {
             if (!isDragging) return;
             isDragging = false;
-            transform.DOScale(1f, 0.2f);
+            container.DOScale(1f, 0.2f);
+            container.localPosition = new Vector3(0f, 0f, 0f);
             OnDragEnd?.Invoke(this, model, transform.position);
-        }
-
-        private Vector3 GetPointerWorldPosition(PointerEventData eventData)
-        {
-            Vector3 mousePos = eventData.position;
-            mousePos.z = -mainCamera.transform.position.z;
-            return mainCamera.ScreenToWorldPoint(mousePos);
-        }
-
-        public void SetHighlight(bool isValid)
-        {
-            foreach (var letterView in letterViews)
-            {
-                if (letterView != null)
-                {
-                    letterView.SetHighlight(isValid);
-                }
-            }
-
-            if (frameRenderer != null)
-            {
-                Color color = isValid ? Color.green : Color.red;
-                color.a = 0.5f;
-                frameRenderer.DOColor(color, 0.2f);
-            }
-        }
-
-        public void ResetHighlight()
-        {
-            foreach (var letterView in letterViews)
-            {
-                if (letterView != null)
-                {
-                    letterView.ResetHighlight();
-                }
-            }
-
-            if (frameRenderer != null)
-            {
-                frameRenderer.DOColor(Color.white, 0.2f);
-            }
         }
 
         public int GetCharacterCount()

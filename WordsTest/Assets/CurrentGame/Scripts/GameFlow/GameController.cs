@@ -37,47 +37,41 @@ namespace CurrentGame.GameFlow
             transitionManager.OpeningTransitionAsync(() =>
             {
                 mainMenuScreen.gameObject.SetActive(true);
+                gameplayUI.gameObject.SetActive(false);
+                levelView.gameObject.SetActive(false);
+                victoryScreen.gameObject.SetActive(false);
+                optionsScreen.gameObject.SetActive(false);
             }).Forget();
         }
 
         public void CheckFinish()
         {
             var placedClustersGroups = levelModel.PlacedClusters.GroupBy(pc => pc.position.wordIndex).ToList();
-            var completedWords = new List<string>();
+            var wordsLeft = levelModel.Words.ToList();
+            var completedWords = new List<Word>();
             
             foreach (var placedClusterGroup in placedClustersGroups)
             {
-                var word = levelModel.Words[placedClusterGroup.Key];
                 var orderedClusters = placedClusterGroup.OrderBy(pc => pc.position.charIndex).ToList();
-                
-                var wordChars = new char[word.length];
-                var isComplete = true;
+                var completeChars = new char[orderedClusters.Last().position.charIndex + orderedClusters.Last().cluster.length];
                 
                 foreach (var placedCluster in orderedClusters)
                 {
                     for (int i = 0; i < placedCluster.cluster.length; i++)
                     {
-                        var charIndex = placedCluster.position.charIndex + i;
-                        if (charIndex < word.length && word.characters[charIndex] == placedCluster.cluster.characters[i])
-                        {
-                            wordChars[charIndex] = placedCluster.cluster.characters[i];
-                        }
-                        else
-                        {
-                            isComplete = false;
-                            break;
-                        }
+                        completeChars[placedCluster.position.charIndex + i] = placedCluster.cluster.characters[i];
                     }
-                    if (!isComplete) break;
                 }
                 
-                if (isComplete)
+                var word = wordsLeft.FirstOrDefault(w => w.characters.SequenceEqual(completeChars));
+                if (word != null)
                 {
-                    completedWords.Add(new string(wordChars));
+                    wordsLeft.Remove(word);
+                    completedWords.Add(word);
                 }
             }
             
-            if (completedWords.Count == levelModel.Words.Count)
+            if (wordsLeft.Count == 0)
             {
                 transitionManager.TransitionAsync(() =>
                 {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -8,31 +9,24 @@ namespace CurrentGame.Gameplay.Views
     {
         [SerializeField] private TextMeshPro textMesh;
         [SerializeField] private SpriteRenderer backgroundRenderer;
+        [SerializeField] private List<Sprite> backgrounds;
         
-        public void SetLetter(char letter)
+        public void SetLetter(char letter, int color)
         {
-            if (textMesh != null)
-            {
-                textMesh.text = letter.ToString();
-            }
+            textMesh.text = letter.ToString();
+            backgroundRenderer.sprite = backgrounds[color % backgrounds.Count];
         }
 
         public void SetHighlight(bool isValid)
         {
-            if (backgroundRenderer != null)
-            {
-                Color color = isValid ? Color.green : Color.red;
-                color.a = 0.5f;
-                backgroundRenderer.DOColor(color, 0.2f);
-            }
+            Color color = isValid ? Color.green : Color.red;
+            color.a = 0.5f;
+            backgroundRenderer.DOColor(color, 0.2f);
         }
 
         public void ResetHighlight()
         {
-            if (backgroundRenderer != null)
-            {
-                backgroundRenderer.DOColor(Color.white, 0.2f);
-            }
+            backgroundRenderer.DOColor(Color.white, 0.2f);
         }
     }
 }

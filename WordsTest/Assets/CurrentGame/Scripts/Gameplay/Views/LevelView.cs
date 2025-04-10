@@ -9,12 +9,13 @@ namespace CurrentGame.Gameplay.Views
 {
     public class LevelView : MonoBehaviour
     {
-        public static float LETTER_SIZE = 1.3f;
+        public static float LETTER_SIZE = 1.1f;
         public static float LETTER_DISTANCE = 1.5f;
         public static float WORD_SPACING = 1.5f;
         public static float LETTER_SPACING = 1.5f;
-        public static float CLUSTER_SPACING = 1f;
-        public static float PALETTE_HEIGHT = 4f;
+        public static float CLUSTER_SPACING = 0.5f;
+        public static float PALETTE_HEIGHT = 6f;
+        public static float FRAME_PADDING = 0.15f;
 
         [SerializeField] private Transform cellsContainer;
         [SerializeField] private ClusterView clusterPrefab;

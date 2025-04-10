@@ -31,8 +31,7 @@ namespace CurrentGame.Gameplay.Views
             clusterView = view;
             if (view != null)
             {
-                view.transform.SetParent(transform, false);
-                view.transform.localPosition = Vector3.zero;
+                view.transform.SetParent(transform, true);
             }
         }
 

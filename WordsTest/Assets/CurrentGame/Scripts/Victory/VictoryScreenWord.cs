@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CurrentGame.Gameplay.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,15 +13,15 @@ namespace CurrentGame.Victory
         
         private List<VictoryScreenLetter> letters = new();
 
-        public void SetWord(string word, float startDelay = 0f)
+        public void SetWord(Word word, float startDelay = 0f)
         {
             Clear();
             
-            for (int i = 0; i < word.Length; i++)
+            for (int i = 0; i < word.characters.Count; i++)
             {
                 var letterView = Instantiate(letterPrefab, transform);
                 letters.Add(letterView);
-                letterView.SetLetter(word[i], startDelay + i * letterSpawnDelay);
+                letterView.SetLetter(word.characters[i], startDelay + i * letterSpawnDelay);
             }
         }
 

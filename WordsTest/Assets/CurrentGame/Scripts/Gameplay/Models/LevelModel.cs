@@ -58,9 +58,9 @@ namespace CurrentGame.Gameplay.Models
             eventManager.TriggerEvent(EventManager.modelUpdated);
         }
         
-        public void AddPaletteCluster(Cluster cluster)
+        public void AddPaletteCluster(Cluster cluster, int insertIndex)
         {
-            paletteClusters.Add(cluster);
+            paletteClusters.Insert(insertIndex, cluster);
             eventManager.TriggerEvent(EventManager.modelUpdated);
         }
         

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CurrentGame.Gameplay.Models;
 using Cysharp.Threading.Tasks;
+using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.RemoteConfig;
 using UnityEngine;
@@ -27,6 +28,11 @@ namespace CurrentGame.GameFlow
             try
             {
                 await UnityServices.InitializeAsync();
+                
+                if (!AuthenticationService.Instance.IsSignedIn)
+                {
+                    await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                }
                 
                 RemoteConfigService.Instance.FetchCompleted += OnRemoteConfigFetched;
                 await RemoteConfigService.Instance.FetchConfigsAsync(
