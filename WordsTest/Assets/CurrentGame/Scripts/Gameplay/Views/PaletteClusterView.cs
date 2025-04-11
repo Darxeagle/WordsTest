@@ -1,16 +1,14 @@
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
 
 namespace CurrentGame.Gameplay.Views
 {
     public class PaletteClusterView : MonoBehaviour
     {
-        private const float MIN_SPEED = 0.1f;
-        private const float MAX_SPEED = 5f;
-        private const float DISTANCE_THRESHOLD = 0.01f;
-        
         private ClusterView clusterView;
-        private Vector3 targetOffset;
-        private Vector3 currentOffset;
+        
+        public ClusterView ClusterView => clusterView;
 
 
         private void Awake()
@@ -21,11 +19,6 @@ namespace CurrentGame.Gameplay.Views
             }
         }
 
-        public ClusterView GetClusterView()
-        {
-            return clusterView;
-        }
-
         public void SetClusterView(ClusterView view)
         {
             clusterView = view;
@@ -34,34 +27,17 @@ namespace CurrentGame.Gameplay.Views
                 view.transform.SetParent(transform, true);
             }
         }
-
-        public void SetOffset(Vector3 offset)
+        
+        public async UniTask AnimateFromLeft(bool longer = false)
         {
-            currentOffset = offset;
-            if (clusterView != null)
-            {
-                clusterView.transform.localPosition = offset;
-            }
+            await clusterView.transform.DOLocalMoveX(0f, 0.2f).From(longer ? -1.5f : -0.5f).SetEase(Ease.OutCirc)
+                .AsyncWaitForCompletion();
         }
-
-        public void SetTargetOffset(Vector3 offset)
+        
+        public async UniTask AnimateFromRight(bool longer = false)
         {
-            targetOffset = offset;
-        }
-
-        private void Update()
-        {
-            if (clusterView != null)
-            {
-                float distance = Vector3.Distance(currentOffset, targetOffset);
-                if (distance > DISTANCE_THRESHOLD)
-                {
-                    // Speed inversely proportional to distance, clamped between MIN_SPEED and MAX_SPEED
-                    float speed = Mathf.Lerp(MIN_SPEED, MAX_SPEED, 1f / (1f + distance));
-                    currentOffset = Vector3.Lerp(currentOffset, targetOffset, speed * Time.deltaTime);
-                    clusterView.transform.localPosition = currentOffset;
-                }
-            }
+            await clusterView.transform.DOLocalMoveX(0f, 0.2f).From(longer ? 1.5f : 0.5f).SetEase(Ease.OutCirc)
+                .AsyncWaitForCompletion();
         }
     }
 }

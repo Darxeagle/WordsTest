@@ -1,6 +1,7 @@
 using System;
 using CurrentGame.Gameplay.Models;
 using CurrentGame.Helpers;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -24,9 +25,14 @@ namespace CurrentGame.Gameplay.Views
         private Vector3 startPosition;
         private bool isDragging;
         private LetterView[] letterViews;
-        
+        private Color initialColor;
+
         public Cluster Model => model;
-        
+
+        private void Awake()
+        {
+            initialColor = frameRenderer.color;
+        }
 
         public void Initialize(Cluster clusterData)
         {
@@ -97,6 +103,25 @@ namespace CurrentGame.Gameplay.Views
         public int GetCharacterCount()
         {
             return model?.length ?? 0;
+        }
+
+        public async UniTask BlinkCheck(float delay = 0f)
+        {
+            if (delay > 0) await UniTask.Delay((int)(delay * 1000));
+            await frameRenderer.DOColor(new Color(0.3f, 0.5f, 1f), 0.1f).From(initialColor).AsyncWaitForCompletion();
+            await frameRenderer.DOColor(initialColor, 0.1f).AsyncWaitForCompletion();
+        }
+        
+        public async UniTask BlinkCorrect()
+        {
+            await frameRenderer.DOColor(new Color(0.3f, 1f, 0.3f), 0.2f).From(initialColor).AsyncWaitForCompletion();
+            await frameRenderer.DOColor(initialColor, 0.2f).AsyncWaitForCompletion();
+        }
+        
+        public async UniTask BlinkWrong()
+        {
+            await frameRenderer.DOColor(new Color(1f, 0.3f, 0.3f), 0.2f).From(initialColor).AsyncWaitForCompletion();
+            await frameRenderer.DOColor(initialColor, 0.2f).AsyncWaitForCompletion();
         }
     }
 }

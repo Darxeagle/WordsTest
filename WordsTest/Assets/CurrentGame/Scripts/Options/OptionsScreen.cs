@@ -52,10 +52,7 @@ namespace CurrentGame.Options
         
         private void OnCloseButtonClicked()
         {
-            if (fromMenu)
-            {
-                gameController.ToMainMenu(false);
-            }
+            gameController.CloseOptions(fromMenu);
         }
         
         private void OnMainMenuButtonClicked()

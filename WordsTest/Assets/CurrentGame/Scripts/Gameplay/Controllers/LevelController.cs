@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using CurrentGame.GameFlow;
 using CurrentGame.Gameplay.Models;
 using CurrentGame.Gameplay.Views;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
@@ -45,8 +45,10 @@ namespace CurrentGame.Gameplay.Controllers
             if (existingPlacedCluster != null)
             {
                 levelModel.RemovePlacedCluster(existingPlacedCluster);
+                levelView.RemoveCluster(existingPlacedCluster);
             }
             
+            var removeIndex = levelModel.PaletteClusters.ToList().IndexOf(clusterView.Model);
             levelModel.RemovePaletteCluster(clusterView.Model);
             
             var placedCluster = new PlacedCluster
@@ -56,15 +58,15 @@ namespace CurrentGame.Gameplay.Controllers
             };
             levelModel.AddPlacedCluster(placedCluster);
             
-            levelView.PlaceCluster(clusterView, placedCluster);
-            paletteView.RemoveCluster(clusterView.Model);
+            levelView.AnimateClusterPlace(clusterView, placedCluster).Forget();
+            paletteView.RemoveCluster(clusterView.Model, removeIndex);
         }
 
         public void ReturnClusterToPalette(Cluster cluster, Vector3 position)
         {
             if (levelModel.PaletteClusters.Contains(cluster))
             {
-                paletteView.ReturnClusterToPanel(cluster);
+                paletteView.AnimateClusterReturnToPanel(cluster).Forget();
             }
             else
             {
@@ -76,7 +78,8 @@ namespace CurrentGame.Gameplay.Controllers
                 levelModel.RemovePlacedCluster(placedCluster);
                 levelModel.AddPaletteCluster(cluster, insertIndex);
                 
-                paletteView.AddCluster(cluster, clusterView);
+                levelView.RemoveCluster(placedCluster);
+                paletteView.AddCluster(cluster, clusterView, insertIndex);
             }
         }
         
@@ -86,7 +89,7 @@ namespace CurrentGame.Gameplay.Controllers
             if (placedCluster != null)
             {
                 Vector3 targetPos = levelView.GetLetterPosition(placedCluster.position);
-                levelView.MoveClusterToWord(cluster, targetPos);
+                levelView.AnimateClusterMove(cluster, targetPos).Forget();
             }
         }
 
@@ -95,9 +98,35 @@ namespace CurrentGame.Gameplay.Controllers
             return levelModel.PlacedClusters.Any(pc => pc.cluster == cluster);
         }
 
-        public void CheckCompleted()
+        public List<Word> CheckCompleted()
         {
-            gameController.CheckFinish();
+            var placedClustersGroups = levelModel.PlacedClusters.GroupBy(pc => pc.position.wordIndex).ToList();
+            var wordsLeft = levelModel.Words.ToList();
+            var completedWords = new List<Word>();
+            
+            foreach (var placedClusterGroup in placedClustersGroups)
+            {
+                var orderedClusters = placedClusterGroup.OrderBy(pc => pc.position.charIndex).ToList();
+                var completeChars = new char[orderedClusters.Last().position.charIndex + orderedClusters.Last().cluster.length];
+                
+                foreach (var placedCluster in orderedClusters)
+                {
+                    for (int i = 0; i < placedCluster.cluster.length; i++)
+                    {
+                        completeChars[placedCluster.position.charIndex + i] = placedCluster.cluster.characters[i];
+                    }
+                }
+                
+                var word = wordsLeft.FirstOrDefault(w => w.characters.SequenceEqual(completeChars));
+                if (word != null)
+                {
+                    wordsLeft.Remove(word);
+                    completedWords.Add(word);
+                }
+            }
+
+            if (wordsLeft.Count == 0) return completedWords;
+            else return null;
         }
     }
 }

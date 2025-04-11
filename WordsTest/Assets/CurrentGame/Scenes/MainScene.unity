@@ -470,13 +470,14 @@ GameObject:
   m_Component:
   - component: {fileID: 90171091}
   - component: {fileID: 90171092}
+  - component: {fileID: 90171093}
   m_Layer: 0
   m_Name: GameplayUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &90171091
 RectTransform:
   m_ObjectHideFlags: 0
@@ -511,6 +512,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   completeButton: {fileID: 1635876575}
   optionsButton: {fileID: 555058109}
+  canvasGroup: {fileID: 90171093}
+--- !u!225 &90171093
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 90171090}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &113138861
 GameObject:
   m_ObjectHideFlags: 0

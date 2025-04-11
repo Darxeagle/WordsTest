@@ -21,19 +21,17 @@ namespace CurrentGame.Gameplay.Controllers
 
         private void HandleClusterDragBegin(ClusterView view, Cluster cluster, Vector3 position)
         {
+            if (draggedCluster != null) return;
             draggedCluster = cluster;
         }
 
         private void HandleClusterDragProgress(ClusterView view, Cluster cluster, Vector3 position)
         {
-            //var letterPosition = levelView.GetNearestLetter(position);
-
-            //bool isValidPlacement = levelController.CheckPlacement(cluster, letterPosition);
-            //view.SetHighlight(isValidPlacement);
         }
 
         public void HandleClusterDragEnd(ClusterView view, Cluster cluster, Vector3 position)
         {
+            if (cluster != draggedCluster) return;
             draggedCluster = null;
             
             if (levelView.IsPositionOnPalette(position))

@@ -4,6 +4,7 @@ using System.Linq;
 using CurrentGame.GameFlow;
 using UnityEngine;
 using Zenject;
+using Random = UnityEngine.Random;
 
 namespace CurrentGame.Gameplay.Models
 {
@@ -25,7 +26,7 @@ namespace CurrentGame.Gameplay.Models
         public void Apply(LevelData data)
         {
             words = data.words.Select(wordStr => new Word(wordStr)).ToList();
-            paletteClusters = data.clusters.Select(clusterStr => new Cluster(clusterStr)).ToList();
+            paletteClusters = data.clusters.Select(clusterStr => new Cluster(clusterStr)).OrderBy(_ => Random.value).ToList();
             placedClusters.Clear();
             
             eventManager.TriggerEvent(EventManager.modelUpdated);

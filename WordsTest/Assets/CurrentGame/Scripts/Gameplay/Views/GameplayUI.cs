@@ -1,7 +1,7 @@
-﻿using System;
-using CurrentGame.GameFlow;
+﻿using CurrentGame.GameFlow;
 using CurrentGame.Gameplay.Controllers;
 using CurrentGame.Gameplay.Models;
+using Cysharp.Threading.Tasks;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +13,7 @@ namespace CurrentGame.Gameplay.Views
     {
         [SerializeField] private Button completeButton;
         [SerializeField] private Button optionsButton;
+        [SerializeField] private CanvasGroup canvasGroup;
         
         [Inject] private LevelController levelController;
         [Inject] private GameController gameController;
@@ -26,10 +27,15 @@ namespace CurrentGame.Gameplay.Views
             eventManager.EventBus.Where(e => e == EventManager.modelUpdated).Subscribe(LevelModelUpdated).AddTo(this);
             LevelModelUpdated();
         }
+        
+        public void SetInputEnabled(bool enabled)
+        {
+            canvasGroup.interactable = enabled;
+        }
 
         private void OnCompleteButtonClicked()
         {
-            levelController.CheckCompleted();
+            gameController.CheckFinish().Forget();
         }
         
         private void OnOptionsButtonClicked()

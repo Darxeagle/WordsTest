@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CurrentGame.Gameplay.Models;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -74,6 +75,29 @@ namespace CurrentGame.Gameplay.Views
             clusterView.OnDragEnd += HandleClusterDragEnd;
             return clusterView;
         }
+        
+        private void Clear()
+        {
+            foreach (var cellView in cells)
+            {
+                Destroy(cellView);
+            }
+            cells.Clear();
+            
+            foreach (var clusterView in placedClusters.Values)
+            {
+                if (clusterView != null)
+                {
+                    clusterView.OnDragBegin -= HandleClusterDragBegin;
+                    clusterView.OnDragProgress -= HandleClusterDragProgress;
+                    clusterView.OnDragEnd -= HandleClusterDragEnd;
+                    Destroy(clusterView.gameObject);
+                }
+            }
+            placedClusters.Clear();
+
+            paletteView.Clear();
+        }
 
         private void HandleClusterDragBegin(ClusterView view, Cluster cluster, Vector3 position)
         {
@@ -126,42 +150,57 @@ namespace CurrentGame.Gameplay.Views
         {
             return position.y < paletteView.transform.position.y + PALETTE_HEIGHT / 2f;
         }
+        
+        public ClusterView RemoveCluster(PlacedCluster placedCluster)
+        {
+            if (placedClusters.Remove(placedCluster, out var clusterView))
+            {
+                return clusterView;
+            }
+            return null;
+        }
 
-        public async UniTask PlaceCluster(ClusterView clusterView, PlacedCluster placedCluster)
+        public async UniTask AnimateClusterPlace(ClusterView clusterView, PlacedCluster placedCluster)
         {
             clusterView.transform.SetParent(cellsContainer);
             placedClusters.Add(placedCluster, clusterView);
-            await MoveClusterToWord(clusterView, GetLetterPosition(placedCluster.position));
+            await AnimateClusterMove(clusterView, GetLetterPosition(placedCluster.position));
         }
 
-        public async UniTask MoveClusterToWord(ClusterView clusterView, Vector3 targetPosition)
+        public async UniTask AnimateClusterMove(ClusterView clusterView, Vector3 targetPosition)
         {
-            clusterView.transform.SetParent(cellsContainer);
-            await clusterView.transform.DOMove(targetPosition, 0.2f).SetEase(DG.Tweening.Ease.OutBack)
+            await clusterView.transform.DOMove(targetPosition, 0.2f).SetEase(DG.Tweening.Ease.OutCirc)
                 .AsyncWaitForCompletion();
         }
 
-        private void Clear()
+        public async UniTask BlinkCheckAllClusters()
         {
-            foreach (var cellView in cells)
-            {
-                Destroy(cellView);
-            }
-            cells.Clear();
-            
-            foreach (var clusterView in placedClusters.Values)
-            {
-                if (clusterView != null)
-                {
-                    clusterView.OnDragBegin -= HandleClusterDragBegin;
-                    clusterView.OnDragProgress -= HandleClusterDragProgress;
-                    clusterView.OnDragEnd -= HandleClusterDragEnd;
-                    Destroy(clusterView.gameObject);
-                }
-            }
-            placedClusters.Clear();
+            var orderedClusters = placedClusters
+                .OrderBy(pc => pc.Key.position.wordIndex)
+                .ThenBy(pc => pc.Key.position.charIndex)
+                .ToList();
 
-            paletteView.Clear();
+            float delay = 0f;
+            var tasks = new List<UniTask>();
+            foreach (var pair in orderedClusters)
+            {
+                tasks.Add(pair.Value.BlinkCheck(delay));
+                delay += 0.05f;
+            }
+
+            await UniTask.WhenAll(tasks);
+        }
+
+        public async UniTask BlinkCorrectAllClusters()
+        {
+            var tasks = placedClusters.Values.Select(cv => cv.BlinkCorrect()).ToList();
+            await UniTask.WhenAll(tasks);
+        }
+
+        public async UniTask BlinkWrongAllClusters()
+        {
+            var tasks = placedClusters.Values.Select(cv => cv.BlinkWrong()).ToList();
+            await UniTask.WhenAll(tasks);
         }
     }
 }

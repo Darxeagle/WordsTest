@@ -44,36 +44,16 @@ namespace CurrentGame.GameFlow
             }).Forget();
         }
 
-        public void CheckFinish()
+        public async UniTask CheckFinish()
         {
-            var placedClustersGroups = levelModel.PlacedClusters.GroupBy(pc => pc.position.wordIndex).ToList();
-            var wordsLeft = levelModel.Words.ToList();
-            var completedWords = new List<Word>();
+            var completedWords = levelController.CheckCompleted();
             
-            foreach (var placedClusterGroup in placedClustersGroups)
+            if (completedWords != null)
             {
-                var orderedClusters = placedClusterGroup.OrderBy(pc => pc.position.charIndex).ToList();
-                var completeChars = new char[orderedClusters.Last().position.charIndex + orderedClusters.Last().cluster.length];
-                
-                foreach (var placedCluster in orderedClusters)
-                {
-                    for (int i = 0; i < placedCluster.cluster.length; i++)
-                    {
-                        completeChars[placedCluster.position.charIndex + i] = placedCluster.cluster.characters[i];
-                    }
-                }
-                
-                var word = wordsLeft.FirstOrDefault(w => w.characters.SequenceEqual(completeChars));
-                if (word != null)
-                {
-                    wordsLeft.Remove(word);
-                    completedWords.Add(word);
-                }
-            }
-            
-            if (wordsLeft.Count == 0)
-            {
-                transitionManager.TransitionAsync(() =>
+                gameplayUI.SetInputEnabled(false);
+                await levelView.BlinkCheckAllClusters();
+                await levelView.BlinkCorrectAllClusters();
+                await transitionManager.TransitionAsync(() =>
                 {
                     victoryScreen.gameObject.SetActive(true);
                     victoryScreen.SetWords(completedWords);
@@ -81,7 +61,15 @@ namespace CurrentGame.GameFlow
                     gameplayUI.gameObject.SetActive(false);
                     gameModel.CurrentLevel++;
                     levelModel.Clear();
-                }).Forget();
+                });
+                gameplayUI.SetInputEnabled(true);
+            }
+            else
+            {
+                gameplayUI.SetInputEnabled(false);
+                await levelView.BlinkCheckAllClusters();
+                await levelView.BlinkWrongAllClusters();
+                gameplayUI.SetInputEnabled(true);
             }
         }
 
@@ -112,6 +100,7 @@ namespace CurrentGame.GameFlow
                     gameplayUI.gameObject.SetActive(false);
                     mainMenuScreen.gameObject.SetActive(true);
                     optionsScreen.gameObject.SetActive(false);
+                    victoryScreen.gameObject.SetActive(false);
                 }).Forget();
             }
             else
@@ -137,7 +126,29 @@ namespace CurrentGame.GameFlow
             }
             else
             {
-                optionsScreen.gameObject.SetActive(true);
+                transitionManager.TransitionAsync(() =>
+                {
+                    optionsScreen.gameObject.SetActive(true);
+                    levelView.gameObject.SetActive(false);
+                    gameplayUI.gameObject.SetActive(false);
+                }).Forget();
+            }
+        }
+
+        public void CloseOptions(bool fromMenu)
+        {
+            if (fromMenu)
+            {
+                ToMainMenu(false);
+            }
+            else
+            {
+                transitionManager.TransitionAsync(() =>
+                {
+                    optionsScreen.gameObject.SetActive(false);
+                    levelView.gameObject.SetActive(true);
+                    gameplayUI.gameObject.SetActive(true);
+                }).Forget();
             }
         }
     }
