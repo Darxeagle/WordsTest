@@ -25,6 +25,7 @@ namespace CurrentGame.GameFlow
         [Inject] private OptionsScreen optionsScreen;
         [Inject] private SaveManager saveManager;
         [Inject] private LevelsDataManager levelsDataManager;
+        [Inject] private EventManager eventManager;
         
         public void Initialize()
         {
@@ -51,7 +52,9 @@ namespace CurrentGame.GameFlow
             if (completedWords != null)
             {
                 gameplayUI.SetInputEnabled(false);
+                eventManager.TriggerEvent(EventId.CheckStarted);
                 await levelView.BlinkCheckAllClusters();
+                eventManager.TriggerEvent(EventId.CheckCompleted);
                 await levelView.BlinkCorrectAllClusters();
                 await transitionManager.TransitionAsync(() =>
                 {
@@ -67,7 +70,9 @@ namespace CurrentGame.GameFlow
             else
             {
                 gameplayUI.SetInputEnabled(false);
+                eventManager.TriggerEvent(EventId.CheckStarted);
                 await levelView.BlinkCheckAllClusters();
+                eventManager.TriggerEvent(EventId.CheckFailed);
                 await levelView.BlinkWrongAllClusters();
                 gameplayUI.SetInputEnabled(true);
             }
@@ -79,7 +84,7 @@ namespace CurrentGame.GameFlow
             {
                 levelModel.Apply(levelsDataManager.GetLevelByIndex(gameModel.CurrentLevel));
             }
-            
+
             transitionManager.TransitionAsync(() =>
             {
                 levelController.InitializeLevel();
@@ -87,6 +92,7 @@ namespace CurrentGame.GameFlow
                 gameplayUI.gameObject.SetActive(true);
                 mainMenuScreen.gameObject.SetActive(false);
                 victoryScreen.gameObject.SetActive(false);
+                eventManager.TriggerEvent(EventId.LevelStarted);
             }).Forget();
         }
 

@@ -15,3 +15,17 @@ MonoBehaviour:
   soundsConfigEntries:
   - soundId: 0
     audioClip: {fileID: 8300000, guid: a7df0020e037cc143ba75b4df0b5070b, type: 3}
+  - soundId: 1
+    audioClip: {fileID: 8300000, guid: ed8d17d15157beb4f8754e036ec3be8b, type: 3}
+  - soundId: 2
+    audioClip: {fileID: 8300000, guid: 24014ff22687aeb4fb591ae784d8de61, type: 3}
+  - soundId: 3
+    audioClip: {fileID: 8300000, guid: f587a8ccaa52a734c91f83ea691d9a20, type: 3}
+  - soundId: 4
+    audioClip: {fileID: 8300000, guid: 5b44f64115917c94d86fb757535e1ad1, type: 3}
+  - soundId: 5
+    audioClip: {fileID: 8300000, guid: 6171c56e5435f194293a1e5c2664a196, type: 3}
+  - soundId: 6
+    audioClip: {fileID: 8300000, guid: e581640219760264cb3bf120a654a22e, type: 3}
+  - soundId: 7
+    audioClip: {fileID: 8300000, guid: cbd1adc62dd3f474a96f9bb3c75a1da7, type: 3}

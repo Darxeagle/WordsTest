@@ -5,17 +5,13 @@ namespace CurrentGame.GameFlow
 {
     public class EventManager
     {
-        public static string modelUpdated = "ModelUpdated";
-        public static string buttonClicked = "ButtonClicked";
+        private Subject<EventId> eventBus = new Subject<EventId>();
         
+        public IObservable<EventId> EventBus => eventBus;
         
-        private Subject<string> eventBus = new Subject<string>();
-        
-        public IObservable<string> EventBus => eventBus;
-        
-        public void TriggerEvent(string eventName)
+        public void TriggerEvent(EventId eventId)
         {
-            eventBus.OnNext(eventName);
+            eventBus.OnNext(eventId);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace CurrentGame.Gameplay.Models
             paletteClusters = data.clusters.Select(clusterStr => new Cluster(clusterStr)).OrderBy(_ => Random.value).ToList();
             placedClusters.Clear();
             
-            eventManager.TriggerEvent(EventManager.modelUpdated);
+            eventManager.TriggerEvent(EventId.ModelUpdated);
             initialized = true;
         }
         
@@ -40,7 +40,7 @@ namespace CurrentGame.Gameplay.Models
             placedClusters = model.placedClusters;
             initialized = model.initialized;
             
-            eventManager.TriggerEvent(EventManager.modelUpdated);
+            eventManager.TriggerEvent(EventId.ModelUpdated);
         }
         
         public void Clear()
@@ -50,31 +50,31 @@ namespace CurrentGame.Gameplay.Models
             paletteClusters.Clear();
             initialized = false;
             
-            eventManager.TriggerEvent(EventManager.modelUpdated);
+            eventManager.TriggerEvent(EventId.ModelUpdated);
         }
         
         public void AddPlacedCluster(PlacedCluster placedCluster)
         {
             placedClusters.Add(placedCluster);
-            eventManager.TriggerEvent(EventManager.modelUpdated);
+            eventManager.TriggerEvent(EventId.ModelUpdated);
         }
         
         public void AddPaletteCluster(Cluster cluster, int insertIndex)
         {
             paletteClusters.Insert(insertIndex, cluster);
-            eventManager.TriggerEvent(EventManager.modelUpdated);
+            eventManager.TriggerEvent(EventId.ModelUpdated);
         }
         
         public void RemovePlacedCluster(PlacedCluster placedCluster)
         {
             placedClusters.Remove(placedCluster);
-            eventManager.TriggerEvent(EventManager.modelUpdated);
+            eventManager.TriggerEvent(EventId.ModelUpdated);
         }
         
         public void RemovePaletteCluster(Cluster cluster)
         {
             paletteClusters.Remove(cluster);
-            eventManager.TriggerEvent(EventManager.modelUpdated);
+            eventManager.TriggerEvent(EventId.ModelUpdated);
         }
     }
 }

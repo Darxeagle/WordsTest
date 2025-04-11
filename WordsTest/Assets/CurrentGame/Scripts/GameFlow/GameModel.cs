@@ -28,7 +28,7 @@ namespace CurrentGame.GameFlow
                 if (currentLevel != value)
                 {
                     currentLevel = value;
-                    eventManager.TriggerEvent(EventManager.modelUpdated);
+                    eventManager.TriggerEvent(EventId.ModelUpdated);
                 }
             }
         }
@@ -41,7 +41,7 @@ namespace CurrentGame.GameFlow
                 if (musicEnabled != value)
                 {
                     musicEnabled = value;
-                    eventManager.TriggerEvent(EventManager.modelUpdated);
+                    eventManager.TriggerEvent(EventId.ModelUpdated);
                 }
             }
         }
@@ -54,7 +54,7 @@ namespace CurrentGame.GameFlow
                 if (soundEnabled != value)
                 {
                     soundEnabled = value;
-                    eventManager.TriggerEvent(EventManager.modelUpdated);
+                    eventManager.TriggerEvent(EventId.ModelUpdated);
                 }
             }
         }

@@ -24,7 +24,7 @@ namespace CurrentGame.Gameplay.Views
         {
             completeButton.onClick.AddListener(OnCompleteButtonClicked);
             optionsButton.onClick.AddListener(OnOptionsButtonClicked);
-            eventManager.EventBus.Where(e => e == EventManager.modelUpdated).Subscribe(LevelModelUpdated).AddTo(this);
+            eventManager.EventBus.Where(e => e == EventId.ModelUpdated).Subscribe(LevelModelUpdated).AddTo(this);
             LevelModelUpdated();
         }
         
@@ -43,7 +43,7 @@ namespace CurrentGame.Gameplay.Views
             gameController.ToOptions(false);
         }
 
-        private void LevelModelUpdated(string e = null)
+        private void LevelModelUpdated(EventId e = default)
         {
             completeButton.gameObject.SetActive(levelModel.Initialized && levelModel.PaletteClusters.Count == 0);
         }

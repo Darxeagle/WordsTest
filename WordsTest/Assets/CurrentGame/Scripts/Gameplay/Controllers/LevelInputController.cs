@@ -1,3 +1,4 @@
+using CurrentGame.GameFlow;
 using CurrentGame.Gameplay.Models;
 using CurrentGame.Gameplay.Views;
 using UnityEngine;
@@ -9,6 +10,7 @@ namespace CurrentGame.Gameplay.Controllers
     {
         [Inject] private LevelView levelView;
         [Inject] private LevelController levelController;
+        [Inject] private EventManager eventManager;
 
         private Cluster draggedCluster;
 
@@ -23,6 +25,7 @@ namespace CurrentGame.Gameplay.Controllers
         {
             if (draggedCluster != null) return;
             draggedCluster = cluster;
+            eventManager.TriggerEvent(EventId.ClusterDragBegin);
         }
 
         private void HandleClusterDragProgress(ClusterView view, Cluster cluster, Vector3 position)
@@ -33,6 +36,7 @@ namespace CurrentGame.Gameplay.Controllers
         {
             if (cluster != draggedCluster) return;
             draggedCluster = null;
+            eventManager.TriggerEvent(EventId.ClusterDragEnd);
             
             if (levelView.IsPositionOnPalette(position))
             {

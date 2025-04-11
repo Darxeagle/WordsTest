@@ -21,7 +21,7 @@ namespace CurrentGame.Gameplay.Saves
 
         public void Initialize()
         {
-            eventManager.EventBus.Where(e => e == EventManager.modelUpdated).Subscribe(ModelChanged);
+            eventManager.EventBus.Where(e => e == EventId.ModelUpdated).Subscribe(ModelChanged);
         }
         
         public void LoadGame()
@@ -43,7 +43,7 @@ namespace CurrentGame.Gameplay.Saves
             }
         }
         
-        private void ModelChanged(string e)
+        private void ModelChanged(EventId e)
         {
             modelChanged = true;
         }
@@ -52,12 +52,12 @@ namespace CurrentGame.Gameplay.Saves
         {
             if (modelChanged)
             {
-                SaveGame(EventManager.modelUpdated);
+                SaveGame();
                 modelChanged = false;
             }
         }
 
-        private void SaveGame(string e)
+        private void SaveGame()
         {
             PlayerPrefs.SetString(PREFS_GAME_MODEL, JsonUtility.ToJson(gameModel));
             PlayerPrefs.SetString(PREFS_LEVEL_MODEL, JsonUtility.ToJson(levelModel));
