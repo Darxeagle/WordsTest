@@ -1,5 +1,7 @@
+using System.Runtime.InteropServices;
 using CurrentGame.GameFlow;
 using CurrentGame.Sounds;
+using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -14,9 +16,8 @@ namespace CurrentGame.Options
         [SerializeField] private Button mainMenuButton;
         
         [Inject] private GameModel gameModel;
-        [Inject] private SoundController soundController;
-        [Inject] private MusicController musicController;
         [Inject] private GameController gameController;
+        [Inject] private EventManager eventManager;
         
         private bool fromMenu;
         
@@ -29,11 +30,17 @@ namespace CurrentGame.Options
             soundToggle.onValueChanged.AddListener(OnSoundToggleChanged);
             musicToggle.onValueChanged.AddListener(OnMusicToggleChanged);
             
-            // Initialize toggle states
-            soundToggle.isOn = gameModel.SoundEnabled;
-            musicToggle.isOn = gameModel.MusicEnabled;
+            soundToggle.SetIsOnWithoutNotify(gameModel.SoundEnabled);
+            musicToggle.SetIsOnWithoutNotify(gameModel.MusicEnabled);
+            eventManager.EventBus.Where(e => e == EventId.ModelUpdated).Subscribe(OnModelUpdated);
         }
-        
+
+        private void OnModelUpdated(EventId e)
+        {
+            soundToggle.SetIsOnWithoutNotify(gameModel.SoundEnabled);
+            musicToggle.SetIsOnWithoutNotify(gameModel.MusicEnabled);
+        }
+
         public void FromMenu(bool state)
         {
             fromMenu = state;
@@ -42,12 +49,12 @@ namespace CurrentGame.Options
         
         private void OnSoundToggleChanged(bool isOn)
         {
-            soundController.SetSoundEnabled(isOn);
+            gameModel.SoundEnabled = isOn;
         }
         
         private void OnMusicToggleChanged(bool isOn)
         {
-            musicController.SetMusicEnabled(isOn);
+            gameModel.MusicEnabled = isOn;
         }
         
         private void OnCloseButtonClicked()

@@ -16,8 +16,10 @@ namespace CurrentGame.GameFlow
         public void Apply(GameModel model)
         {
             currentLevel = model.currentLevel;
-            musicEnabled = model.musicEnabled;
-            soundEnabled = model.soundEnabled;
+            MusicEnabled = model.musicEnabled;
+            SoundEnabled = model.soundEnabled;
+            
+            eventManager.TriggerEvent(EventId.ModelUpdated);
         }
 
         public int CurrentLevel

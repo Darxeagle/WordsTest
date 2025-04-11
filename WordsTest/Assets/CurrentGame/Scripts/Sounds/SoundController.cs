@@ -14,28 +14,15 @@ namespace CurrentGame.Sounds
         [Inject] private EventManager eventManager;
         [Inject] private SoundsConfig soundsConfig;
         
-        public bool SoundEnabled { get; private set; } = true;
-        
-        
         public void Initialize()
         {
             audioSource = GetComponent<AudioSource>();
-            
             eventManager.EventBus.Subscribe(OnEvent).AddTo(this);
-            
-            
-            SetSoundEnabled(gameModel.MusicEnabled);
-        }
-        
-        public void SetSoundEnabled(bool enabled)
-        {
-            SoundEnabled = enabled;
-            gameModel.SoundEnabled = enabled;
         }
 
         public void PlaySound(SoundId soundId)
         {
-            if (!SoundEnabled) return;
+            if (!gameModel.SoundEnabled) return;
             
             var clip = soundsConfig.GetSound(soundId);
             audioSource.PlayOneShot(clip);
