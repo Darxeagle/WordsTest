@@ -36,6 +36,7 @@ namespace CurrentGame.Gameplay
             Container.Bind<VictoryScreen>().FromComponentInHierarchy().AsSingle();
             
             Container.BindInterfacesAndSelfTo<GameController>().AsSingle().NonLazy();
+            Container.Bind<ScreenAdjuster>().FromComponentInHierarchy().AsSingle();
         }
     }
 }

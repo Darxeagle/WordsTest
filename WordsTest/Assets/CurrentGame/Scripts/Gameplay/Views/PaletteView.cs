@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Zenject;
 
 namespace CurrentGame.Gameplay.Views
 {
@@ -15,6 +16,8 @@ namespace CurrentGame.Gameplay.Views
         [SerializeField] private SpriteRenderer backgroundRenderer;
         [SerializeField] private Transform clustersContainer;
         [SerializeField] private PaletteClusterView paletteClusterPrefab;
+        
+        [Inject] private ScreenAdjuster screenAdjuster;
 
         private Dictionary<Cluster, PaletteClusterView> paletteClusters = new();
         private Vector2 lastDragPosition;
@@ -92,8 +95,15 @@ namespace CurrentGame.Gameplay.Views
 
         private void ClampScrollPosition()
         {
+            if (xMax < screenAdjuster.ScreenWidth)
+            {
+                scrollContainer.localPosition = new Vector3(
+                    -xMax/2f, 0f, 0f);
+                return;
+            }
+            
             scrollContainer.localPosition = new Vector3(
-                Mathf.Clamp(scrollContainer.localPosition.x, -xMax+screenBounds.width/2f, -screenBounds.width/2f), 
+                Mathf.Clamp(scrollContainer.localPosition.x, -xMax+screenAdjuster.ScreenWidth/2f, -screenAdjuster.ScreenWidth/2f), 
                 0f, 0f);
         }
         

@@ -135,6 +135,7 @@ namespace CurrentGame.GameFlow
                 transitionManager.TransitionAsync(() =>
                 {
                     optionsScreen.gameObject.SetActive(true);
+                    optionsScreen.FromMenu(false);
                     levelView.gameObject.SetActive(false);
                     gameplayUI.gameObject.SetActive(false);
                 }).Forget();

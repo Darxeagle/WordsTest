@@ -37,7 +37,7 @@ namespace CurrentGame.Options
         public void FromMenu(bool state)
         {
             fromMenu = state;
-            mainMenuButton.gameObject.SetActive(state);
+            mainMenuButton.gameObject.SetActive(!state);
         }
         
         private void OnSoundToggleChanged(bool isOn)
