@@ -1,5 +1,6 @@
 ﻿using CurrentGame.GameFlow;
 using CurrentGame.Gameplay.Controllers;
+using CurrentGame.Gameplay.Factories;
 using CurrentGame.Gameplay.Models;
 using CurrentGame.Gameplay.Saves;
 using CurrentGame.Gameplay.Views;
@@ -7,6 +8,7 @@ using CurrentGame.MainMenu;
 using CurrentGame.Options;
 using CurrentGame.Sounds;
 using CurrentGame.Victory;
+using UnityEngine;
 using Zenject;
 
 namespace CurrentGame.Gameplay
@@ -37,6 +39,11 @@ namespace CurrentGame.Gameplay
             
             Container.BindInterfacesAndSelfTo<GameController>().AsSingle().NonLazy();
             Container.Bind<ScreenAdjuster>().FromComponentInHierarchy().AsSingle();
+
+            Container.BindFactory<Cluster, Transform, ClusterView, ClusterViewFactory>().To<ClusterView>().FromFactory<ClusterViewFactory>();
+            Container.BindFactory<Transform, PaletteClusterView, PaletteClusterViewFactory>().To<PaletteClusterView>().FromFactory<PaletteClusterViewFactory>();
+            Container.Bind<GameObject>().WithId("PaletteClusterViewPrefab").FromResource("PaletteClusterView");
+            Container.Bind<GameObject>().WithId("ClusterViewPrefab").FromResource("ClusterView");
         }
     }
 }

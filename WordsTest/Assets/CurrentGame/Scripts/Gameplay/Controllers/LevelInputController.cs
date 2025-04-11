@@ -13,6 +13,8 @@ namespace CurrentGame.Gameplay.Controllers
         [Inject] private EventManager eventManager;
 
         private Cluster draggedCluster;
+        
+        public bool IsDragging => draggedCluster != null;
 
         public void Initialize()
         {
@@ -23,7 +25,7 @@ namespace CurrentGame.Gameplay.Controllers
 
         private void HandleClusterDragBegin(ClusterView view, Cluster cluster, Vector3 position)
         {
-            if (draggedCluster != null) return;
+            if (IsDragging) return;
             draggedCluster = cluster;
             eventManager.TriggerEvent(EventId.ClusterDragBegin);
         }

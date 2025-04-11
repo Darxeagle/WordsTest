@@ -1,10 +1,12 @@
 using System;
+using CurrentGame.Gameplay.Controllers;
 using CurrentGame.Gameplay.Models;
 using CurrentGame.Helpers;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Zenject;
 
 namespace CurrentGame.Gameplay.Views
 {
@@ -15,6 +17,9 @@ namespace CurrentGame.Gameplay.Views
         [SerializeField] private LetterView letterPrefab;
         [SerializeField] private SpriteRenderer frameRenderer;
         [SerializeField] private BoxCollider2D collider;
+
+        [Inject] private LevelInputController inputController;
+        [Inject] private PaletteView paletteView;
         
         public event Action<ClusterView, Cluster, Vector3> OnDragBegin;
         public event Action<ClusterView, Cluster, Vector3> OnDragProgress;
@@ -75,6 +80,9 @@ namespace CurrentGame.Gameplay.Views
 
         public void OnPointerDown(PointerEventData eventData)
         {
+            if (inputController.IsDragging) return;
+            if (paletteView.IsDragging) return;
+            
             isDragging = true;
             startPosition = transform.position;
             Vector3 mousePosition = PositionHelper.ScreenToWorld(eventData.position);

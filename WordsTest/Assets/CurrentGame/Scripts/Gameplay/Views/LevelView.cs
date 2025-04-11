@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CurrentGame.Gameplay.Factories;
 using CurrentGame.Gameplay.Models;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
+using Zenject;
 
 namespace CurrentGame.Gameplay.Views
 {
@@ -19,9 +21,10 @@ namespace CurrentGame.Gameplay.Views
         public static float FRAME_PADDING = 0.15f;
 
         [SerializeField] private Transform cellsContainer;
-        [SerializeField] private ClusterView clusterPrefab;
         [SerializeField] private GameObject cellPrefab;
         [SerializeField] private PaletteView paletteView;
+        
+        [Inject] private ClusterViewFactory clusterViewFactory;
         
         public event Action<ClusterView, Cluster, Vector3> OnClusterDragBegin;
         public event Action<ClusterView, Cluster, Vector3> OnClusterDragProgress;
@@ -68,7 +71,7 @@ namespace CurrentGame.Gameplay.Views
 
         public ClusterView CreateClusterView(Cluster cluster)
         {
-            var clusterView = Instantiate(clusterPrefab);
+            var clusterView = clusterViewFactory.Create(cluster, cellsContainer);
             clusterView.Initialize(cluster);
             clusterView.OnDragBegin += HandleClusterDragBegin;
             clusterView.OnDragProgress += HandleClusterDragProgress;

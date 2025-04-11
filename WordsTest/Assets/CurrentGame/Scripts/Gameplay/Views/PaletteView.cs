@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using CurrentGame.Gameplay.Controllers;
+using CurrentGame.Gameplay.Factories;
 using CurrentGame.Gameplay.Models;
 using CurrentGame.Helpers;
 using Cysharp.Threading.Tasks;
@@ -15,9 +17,10 @@ namespace CurrentGame.Gameplay.Views
         [SerializeField] private Transform scrollContainer;
         [SerializeField] private SpriteRenderer backgroundRenderer;
         [SerializeField] private Transform clustersContainer;
-        [SerializeField] private PaletteClusterView paletteClusterPrefab;
         
         [Inject] private ScreenAdjuster screenAdjuster;
+        [Inject] private PaletteClusterViewFactory paletteClusterViewFactory;
+        [Inject] private LevelInputController inputController;
 
         private Dictionary<Cluster, PaletteClusterView> paletteClusters = new();
         private Vector2 lastDragPosition;
@@ -27,6 +30,7 @@ namespace CurrentGame.Gameplay.Views
         private Rect screenBounds;
 
         public IReadOnlyDictionary<Cluster, PaletteClusterView> PaletteClusters => paletteClusters;
+        public bool IsDragging => isDragging;
         
         public void Initialize(LevelModel model)
         {
@@ -40,7 +44,7 @@ namespace CurrentGame.Gameplay.Views
             foreach (var cluster in clusters)
             {
                 var clusterView = levelView.CreateClusterView(cluster);
-                var paletteClusterView = Instantiate(paletteClusterPrefab, clustersContainer);
+                var paletteClusterView = paletteClusterViewFactory.Create(clustersContainer);
                 paletteClusterView.SetClusterView(clusterView);
                 clusterView.transform.localPosition = Vector3.zero;
                 paletteClusters.Add(cluster, paletteClusterView);
@@ -51,6 +55,8 @@ namespace CurrentGame.Gameplay.Views
 
         public void OnBeginDrag(PointerEventData eventData)
         {
+            if (inputController.IsDragging) return;
+            
             isDragging = true;
             lastDragPosition = PositionHelper.ScreenToWorld(eventData.position);
         }
@@ -114,7 +120,7 @@ namespace CurrentGame.Gameplay.Views
             Vector3 clusterPosition = clusterView.transform.position;
             scrollContainer.localPosition += Vector3.left * (clusterView.GetWidth()/2f + LevelView.CLUSTER_SPACING);
             
-            var paletteClusterView = Instantiate(paletteClusterPrefab, clustersContainer);
+            var paletteClusterView = paletteClusterViewFactory.Create(clustersContainer);
             paletteClusterView.SetClusterView(clusterView);
             paletteClusters.Add(cluster, paletteClusterView);
             UpdateClusterPositions();

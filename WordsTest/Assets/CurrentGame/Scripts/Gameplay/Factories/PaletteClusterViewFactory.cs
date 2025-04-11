@@ -1,20 +1,18 @@
-﻿using CurrentGame.Gameplay.Models;
-using CurrentGame.Gameplay.Views;
+﻿using CurrentGame.Gameplay.Views;
 using UnityEngine;
 using Zenject;
 
 namespace CurrentGame.Gameplay.Factories
 {
-    public class PlacedClusterViewFactory : IFactory<Cluster, Transform, ClusterView>
+    public class PaletteClusterViewFactory : PlaceholderFactory<Transform, PaletteClusterView>
     {
-        [Inject(Id = "PlacedClusterViewPrefab")] private GameObject clusterViewPrefab;
+        [Inject(Id = "PaletteClusterViewPrefab")] private GameObject paletteClusterViewPrefab;
         [Inject] private DiContainer diContainer;
         
-        public ClusterView Create(Cluster model, Transform parent)
+        public override PaletteClusterView Create(Transform parent)
         {
-            var clusterView = diContainer.InstantiatePrefabForComponent<ClusterView>(clusterViewPrefab, parent);
-            clusterView.Initialize(model);
-            return clusterView;
+            var paletteClusterView = diContainer.InstantiatePrefabForComponent<PaletteClusterView>(paletteClusterViewPrefab, parent);
+            return paletteClusterView;
         }
     }
 }
